@@ -15,7 +15,8 @@ setup(
             'flake8',
             'autopep8',
             'pyngrok',
-            'streamlit'
+            'streamlit',
+            'pylint' # Added pylint here
         ]
     },
     author='Your Name',

@@ -1,0 +1,8 @@
+pydantic~=2.0
+google-generativeai
+google-colab
+pytest
+flake8
+autopep8
+pyngrok
+streamlit
