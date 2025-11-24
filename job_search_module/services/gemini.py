@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 
-import google.generativeai as generativeai_sdk # Changed import
+import google.genai as generativeai_sdk # Changed to google.genai
 from google.genai import types # Still needed for types.Part and types.Schema
 
 from job_search_module.services.base import AbstractAIService
@@ -39,7 +39,7 @@ class GeminiService(AbstractAIService):
             A JSON string conforming to the response_schema.
         """
         try:
-            response = self.model.generate_content( # Call generate_content on the model
+            response = self.model.generate_content(
                 contents=contents,
                 generation_config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
