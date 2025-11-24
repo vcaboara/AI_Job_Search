@@ -1,0 +1,4 @@
+*.egg*
+venv/
+__pycache__/
+.env

@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   streamlit_app:
@@ -6,5 +5,5 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - GEMINI_API_KEY=YOUR_GEMINI_API_KEY # Replace with your actual Gemini API Key
+      - GEMINI_API_KEY=${GEMINI_API_KEY} # Replace with your actual Gemini API Key
     command: streamlit run app.py --server.port 8501 --server.enableCORS false --server.enableXsrfProtection false
