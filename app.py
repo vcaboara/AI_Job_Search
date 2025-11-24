@@ -6,6 +6,7 @@ import tempfile # For handling temporary files
 import imghdr # For image type detection (optional, but good practice)
 import PyPDF2 as pypdf # Import PyPDF2 as pypdf
 import docx # Import python-docx
+import google.generativeai as genai # Added: Import genai client
 
 # Conditional import for Colab-specific modules
 try:
