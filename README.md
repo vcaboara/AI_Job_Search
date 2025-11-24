@@ -62,3 +62,8 @@ This project has undergone several significant enhancements to improve its modul
     *   **Supported File Type Validation**: The app validates uploaded files to ensure they are of supported types (PNG, JPG, JPEG, PDF, TXT, MD, DOCX).
     *   **Basic Content Validation**: Text-based files (`.txt`, `.md`) are checked for non-empty content and a minimum character count to ensure meaningful input.
     *   **Secure Temporary Storage**: Uploaded files are temporarily saved and automatically cleaned up after processing using `tempfile.NamedTemporaryFile`, ensuring data privacy and preventing accumulation.
+
+### Latest Fixes and Enhancements (Post-Refactoring)
+
+*   **Resolved `SyntaxError` in `app.py`:** Fixed an unclosed parenthesis in the `st.sidebar.selectbox` configuration, ensuring the Streamlit application launches correctly.
+*   **Resolved `AttributeError` for `google.generativeai.Client`:** Refactored `job_search_module/services/gemini.py` to correctly instantiate the Gemini client using `google.generativeai.GenerativeModel` and handle API key configuration internally, improving compatibility across environments.
