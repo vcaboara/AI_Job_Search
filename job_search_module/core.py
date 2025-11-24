@@ -2,11 +2,11 @@ import os
 import json
 from typing import List, Dict, Any, Optional
 
-from google import genai
-from google.genai import types
 from pydantic import BaseModel, Field
+from google.genai import types # Needed for types.Part and types.Schema
 
 from job_search_module.config import load_config
+from job_search_module.services.base import AbstractAIService
 
 # Load configuration
 app_config = load_config()
@@ -24,23 +24,22 @@ class JobLead(BaseModel):
 
 def find_job_leads(
     user_query: str,
-    context_filepath: Optional[str] = None,
-    client: Optional[genai.Client] = None
+    ai_service: AbstractAIService,
+    context_text: Optional[str] = None,
+    context_image_filepath: Optional[str] = None
 ) -> List[JobLead]:
     """
-    Finds job leads using the Gemini API, incorporating context and structured output.
+    Finds job leads using an AI service, incorporating context and structured output.
 
     Args:
         user_query: The main query (e.g., "DevOps Engineer for climate impact").
-        context_filepath: Optional path to a file (e.g., resume image) for context.
-        client: Optional initialized genai.Client instance.
+        ai_service: An instance of a class implementing AbstractAIService.
+        context_text: Optional text content (e.g., extracted from resume) for context.
+        context_image_filepath: Optional path to an image file (e.g., resume image) for context.
 
     Returns:
         A list of JobLead objects.
     """
-    if client is None:
-        # Client automatically uses the GEMINI_API_KEY environment variable
-        client = genai.Client()
 
     # 1. System Instruction (Persona & Rules)
     system_instruction_parts = [
@@ -54,33 +53,25 @@ def find_job_leads(
     # 2. Build Content Parts
     content_parts = []
 
-    if context_filepath:
-        print(f"Loading context file: {context_filepath}")
-        mime_type = "application/octet-stream"
+    if context_text:
+        system_prompt += f"\n\n--- TEXT CONTEXT FOR PRIORITIZATION ---\nCore Resume/Skills Profile:\n\n{context_text}\n---------------------------------------"
+        print("Text content integrated into system prompt.")
 
-        # Simple file reading and mime type inference (basic handling)
+    if context_image_filepath:
+        print(f"Loading image context file: {context_image_filepath}")
         try:
-            with open(context_filepath, "rb") as f:
+            with open(context_image_filepath, "rb") as f:
                 file_bytes = f.read()
-        except FileNotFoundError:
-            print(f"Error: Context file not found at {context_filepath}. Skipping file context.")
-            file_bytes = None
+            mime_type = "image/jpeg" # Assuming only jpeg/png for simplicity with multi-modal AI
+            if context_image_filepath.lower().endswith(('.png')):
+                mime_type = "image/png"
 
-        if file_bytes:
-            # Basic MIME type detection based on extension
-            if context_filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
-                mime_type = "image/jpeg" # Using jpeg as a common fallback
-                print(f"Inferred MIME type: {mime_type}")
-                content_parts.append(types.Part.from_bytes(data=file_bytes, mime_type=mime_type))
-                content_parts.append(types.Part(text="Use the uploaded file as a resume or context document to refine and prioritize your job search results."))
-            elif context_filepath.lower().endswith(('.txt', '.md', '.docx')):
-                # For text-based files, append the content as text
-                try:
-                    text_content = file_bytes.decode('utf-8')
-                    system_prompt += f"\n\n--- TEXT CONTEXT FOR PRIORITIZATION ---\nCore Resume/Skills Profile:\n\n{text_content}\n---------------------------------------"
-                    print("Text content integrated into system prompt.")
-                except UnicodeDecodeError:
-                    print("Warning: Could not decode file as UTF-8 text. Skipping content integration.")
+            content_parts.append(types.Part.from_bytes(data=file_bytes, mime_type=mime_type))
+            content_parts.append(types.Part(text="Use the uploaded image as a resume or context document to refine and prioritize your job search results."))
+        except FileNotFoundError:
+            print(f"Error: Image context file not found at {context_image_filepath}. Skipping image context.")
+        except Exception as e:
+            print(f"Error loading image file {context_image_filepath}: {e}. Skipping image context.")
 
     # Add the main user query
     content_parts.append(types.Part(text=user_query))
@@ -102,24 +93,21 @@ def find_job_leads(
         items=single_job_lead_schema
     )
 
-    # 4. API Call
+    # 4. API Call using the provided AI service
     try:
-        response = client.models.generate_content(
-            model=app_config["GEMINI_MODEL_NAME"],
+        # Call generate_content on the ai_service instance
+        json_output = ai_service.generate_content(
             contents=content_parts,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                response_schema=response_schema,
-                temperature=0.2
-            )
+            response_schema=response_schema,
+            temperature=0.2,
+            system_instruction=system_prompt # Pass system_instruction to the service
         )
 
-        json_output = response.text
+        # Parse the JSON string into the desired Python list of Pydantic models
         parsed_leads = [JobLead.model_validate(item) for item in json.loads(json_output)]
 
         return parsed_leads
 
     except Exception as e:
-        print(f"An error occurred during the Gemini API call: {e}")
+        print(f"An error occurred during the AI service call: {e}")
         return []
