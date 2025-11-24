@@ -7,7 +7,11 @@ setup(
     install_requires=[
         'pydantic==2.*',  # Specify a compatible Pydantic version
         'google-generativeai',
+<<<<<<< HEAD
         # 'google-colab', # Removed: For Colab-specific functionalities, not needed locally
+=======
+        'google-colab', # For Colab-specific functionalities
+>>>>>>> 61ae92d9877ce1c72fc021455de1c71aa6074cbe
     ],
     extras_require={
         'dev': [

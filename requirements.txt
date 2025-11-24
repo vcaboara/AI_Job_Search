@@ -1,6 +1,10 @@
 pydantic~=2.0
 google-generativeai
+<<<<<<< HEAD
 # google-colab # Removed: Not needed for local environments
+=======
+google-colab
+>>>>>>> 61ae92d9877ce1c72fc021455de1c71aa6074cbe
 pytest
 flake8
 autopep8
