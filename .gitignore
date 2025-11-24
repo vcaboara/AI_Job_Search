@@ -1,4 +1,32 @@
-*.egg*
-venv/
+# Python
 __pycache__/
+*.pyc
+*.log
+
+# Colab/Jupyter Notebook
+.ipynb_checkpoints/
+
+# Environment variables
 .env
+
+# Dependencies
+virtualenv/
+virt/
+vne/
+env/
+
+# Google Drive specific files that cannot be versioned
+drive/
+
+# Colab system files
+.config/
+
+# Python distribution archives
+dist/
+*.egg-info/
+
+# Sample data
+sample_data/
+
+# Local test dummy file
+sample_resume_context.jpg
