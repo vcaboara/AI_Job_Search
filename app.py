@@ -6,7 +6,7 @@ import tempfile # For handling temporary files
 import imghdr # For image type detection (optional, but good practice)
 import PyPDF2 as pypdf # Import PyPDF2 as pypdf
 import docx # Import python-docx
-import google.generativeai as genai # Added: Import genai client
+# Removed: import google.generativeai as genai # No longer needed here, GeminiService handles it internally
 
 # Conditional import for Colab-specific modules
 try:
@@ -90,6 +90,7 @@ if app_config["AI_SERVICE_TYPE"] == "gemini":
     if not gemini_api_key:
         st.error("GEMINI_API_KEY not found. Please enter it in the sidebar or set it as an environment variable.")
         st.stop()
+    # Fixed: Passing api_key directly, not client=genai.Client(...)
     ai_service = GeminiService(model_name=app_config["GEMINI_MODEL_NAME"], api_key=gemini_api_key)
 elif app_config["AI_SERVICE_TYPE"] == "openai":
     # For OpenAI, client initialization would go here using openai_api_key
