@@ -8,8 +8,8 @@ WORKDIR /app
 COPY job_search_module/ job_search_module/
 COPY app.py .
 COPY requirements.txt .
-COPY setup.py . # Added setup.py
-COPY README.md . # Added README.md
+COPY setup.py .
+COPY README.md .
 
 # Upgrade pip and install project dependencies
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
