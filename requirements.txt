@@ -1,6 +1,5 @@
 pydantic~=2.0
 google-generativeai
-google-genai
 pytest
 flake8
 autopep8
@@ -8,3 +7,4 @@ pyngrok
 streamlit
 PyPDF2
 python-docx
+pre-commit # Added pre-commit

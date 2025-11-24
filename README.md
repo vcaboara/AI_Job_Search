@@ -87,3 +87,35 @@ This project has undergone several significant enhancements to improve its modul
 
 *   **Resolved `SyntaxError` in `app.py`:** Fixed an unclosed parenthesis in the `st.sidebar.selectbox` configuration, ensuring the Streamlit application launches correctly.
 *   **Resolved `AttributeError` for `google.generativeai.Client`:** Refactored `job_search_module/services/gemini.py` to correctly instantiate the Gemini client using `google.generativeai` and handle API key configuration internally, improving compatibility across environments.
+
+## Pre-commit Hooks
+
+To ensure code quality and prevent broken code from being checked into the repository, this project utilizes `pre-commit` hooks. These hooks run automatically before each commit, performing checks like linting, formatting, and running unit tests.
+
+### Installation and Usage
+
+1.  **Install `pre-commit`**: First, ensure `pre-commit` is installed in your development environment. If you installed the `dev` dependencies using `pip install -e '.[dev]'`, it should already be available. Otherwise, you can install it separately:
+    ```bash
+    pip install pre-commit
+    ```
+
+2.  **Install the Git Hooks**: Navigate to your project's root directory and install the Git hooks. This command sets up `pre-commit` to run the configured hooks automatically:
+    ```bash
+    pre-commit install
+    ```
+
+3.  **Commit Your Changes**: From now on, whenever you run `git commit`, the configured hooks will execute. If any hook fails (e.g., due to linting errors or failing tests), the commit will be aborted, allowing you to fix the issues before committing. You can temporarily skip hooks with `git commit -n` or `git commit --no-verify` (use with caution).
+
+### Configured Hooks
+
+The `.pre-commit-config.yaml` file includes the following hooks:
+
+*   **`trailing-whitespace`**: Removes superfluous whitespace at the end of lines.
+*   **`end-of-file-fixer`**: Ensures files end with a newline.
+*   **`check-yaml`**, **`check-json`**, **`check-toml`**: Checks YAML, JSON, and TOML files for syntax errors.
+*   **`check-added-large-files`**: Prevents adding large files to the repository.
+*   **`flake8`**: A comprehensive linting tool for Python code.
+*   **`autopep8`**: Automatically formats Python code to conform to PEP 8 style guidelines.
+*   **`pytest`**: Runs all unit tests to catch regressions and ensure code correctness.
+
+By using these hooks, we can maintain a consistent and high-quality codebase effortlessly.

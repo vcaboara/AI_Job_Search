@@ -7,7 +7,6 @@ setup(
     install_requires=[
         'pydantic==2.*',  # Specify a compatible Pydantic version
         'google-generativeai',
-        # 'google-colab', # Removed: For Colab-specific functionalities, not needed locally
     ],
     extras_require={
         'dev': [
@@ -16,7 +15,8 @@ setup(
             'autopep8',
             'pyngrok',
             'streamlit',
-            'pylint' # Added pylint here
+            'pylint',
+            'pre-commit' # Added pre-commit here
         ]
     },
     author='Your Name',
