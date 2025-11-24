@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from google.genai import types
+from google.generativeai import types # FIXED: Changed from google.genai to google.generativeai
 
 class AbstractAIService(ABC):
     """Abstract Base Class for AI services."""
