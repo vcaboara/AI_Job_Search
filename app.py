@@ -4,6 +4,8 @@ import json
 from typing import List, Optional
 import tempfile # For handling temporary files
 import imghdr # For image type detection (optional, but good practice)
+import PyPDF2 as pypdf # Import PyPDF2 as pypdf
+import docx # Import python-docx
 
 # Conditional import for Colab-specific modules
 try:
@@ -55,28 +57,44 @@ current_openai_model = st.sidebar.text_input(
 if ai_service_type == "openai":
     app_config["OPENAI_MODEL_NAME"] = current_openai_model
 
+# 3. API Key Inputs (New)
+gemini_api_key_input = st.sidebar.text_input(
+    "Gemini API Key:",
+    type="password",
+    help="Enter your Google Gemini API Key. Will override environment variable."
+)
+
+openai_api_key_input = st.sidebar.text_input(
+    "OpenAI API Key:",
+    type="password",
+    help="Enter your OpenAI API Key. Will override environment variable. (Placeholder functionality)"
+)
 
 # Instantiate the AI Service based on configuration
 ai_service = None
+
+# Determine the actual API key to use for Gemini
+gemini_api_key = gemini_api_key_input if gemini_api_key_input else os.getenv('GEMINI_API_KEY')
+if not gemini_api_key and IS_COLAB:
+    try:
+        gemini_api_key = userdata.get('GEMINI_API_KEY')
+    except Exception:
+        pass # Handled below by a general error message if still not found
+
+# Determine the actual API key to use for OpenAI (placeholder logic)
+openai_api_key = openai_api_key_input if openai_api_key_input else os.getenv('OPENAI_API_KEY')
+
+
 if app_config["AI_SERVICE_TYPE"] == "gemini":
-    # Ensure GEMINI_API_KEY is set (for Colab context or local env)
-    if 'GEMINI_API_KEY' not in os.environ:
-        if IS_COLAB:
-            try:
-                os.environ['GEMINI_API_KEY'] = userdata.get('GEMINI_API_KEY')
-            except Exception:
-                st.error("GEMINI_API_KEY not found. Please set it in Colab secrets or your environment variables.")
-                st.stop()
-        else:
-            st.error("GEMINI_API_KEY not found. Please set it as an environment variable.")
-            st.stop()
-    ai_service = GeminiService(model_name=app_config["GEMINI_MODEL_NAME"])
+    if not gemini_api_key:
+        st.error("GEMINI_API_KEY not found. Please enter it in the sidebar or set it as an environment variable.")
+        st.stop()
+    ai_service = GeminiService(model_name=app_config["GEMINI_MODEL_NAME"], client=genai.Client(api_key=gemini_api_key))
 elif app_config["AI_SERVICE_TYPE"] == "openai":
-    # Placeholder for OpenAI API Key check (similar logic as Gemini if needed)
-    # if 'OPENAI_API_KEY' not in os.environ:
-    #    st.error("OPENAI_API_KEY not found...")
-    #    st.stop()
-    ai_service = OpenAIService(model_name=app_config["OPENAI_MODEL_NAME"])
+    # For OpenAI, client initialization would go here using openai_api_key
+    if not openai_api_key: # Only for demonstration, in a real scenario you'd need the key for OpenAI
+        st.warning("OPENAI_API_KEY not found. OpenAI service is currently a placeholder.")
+    ai_service = OpenAIService(model_name=app_config["OPENAI_MODEL_NAME"], client=openai_api_key) # Passing key for placeholder
 else:
     st.error(f"Unsupported AI_SERVICE_TYPE: {app_config['AI_SERVICE_TYPE']}")
     st.stop()
@@ -86,43 +104,81 @@ else:
 # Main content area
 search_query = st.text_input("Enter Job Search Query", "DevOps Engineer for climate impact")
 
-# 3. File Uploader for context documents
+# 4. File Uploader for context documents
 uploaded_file = st.file_uploader("Upload Context Document (e.g., Resume, Job Description)", type=["png", "jpg", "jpeg", "pdf", "txt", "md", "docx"])
 
-context_filepath = None
+context_text = None
+context_image_filepath = None
+temp_file_paths = [] # To keep track of temporary files for cleanup
+
 MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
+MIN_TEXT_CHAR_COUNT = 50 # Minimum characters for text-based files
 
 if uploaded_file is not None:
-    # 4. Implement basic file checks
+    # 5. Implement basic file checks
     if uploaded_file.size > MAX_FILE_SIZE:
         st.error(f"File is too large. Max size is {MAX_FILE_SIZE / (1024 * 1024):.0f} MB.")
         uploaded_file = None # Invalidate file
     else:
-        # Check content type if it's an image for more accurate mime type
-        if uploaded_file.type in ["image/jpeg", "image/png"]:
-            # Use imghdr to verify image format (optional, but good practice)
-            # For simplicity, we trust uploaded_file.type for now.
-            pass
-        elif uploaded_file.type not in ["application/pdf", "text/plain", "text/markdown", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
+        # Save the uploaded file temporarily first to allow parsing
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            temp_uploaded_filepath = tmp_file.name
+        temp_file_paths.append(temp_uploaded_filepath)
+
+        # Process based on file type
+        if uploaded_file.type in ["image/jpeg", "image/png"] or uploaded_file.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            context_image_filepath = temp_uploaded_filepath
+            st.success(f"Uploaded image file: {uploaded_file.name}")
+        elif uploaded_file.type == "application/pdf" or uploaded_file.name.lower().endswith(('.pdf')):
+            try:
+                pdf_reader = pypdf.PdfReader(temp_uploaded_filepath)
+                extracted_text = ""
+                for page in pdf_reader.pages:
+                    extracted_text += page.extract_text() or ""
+                context_text = extracted_text
+                st.success(f"Extracted text from PDF: {uploaded_file.name}")
+            except Exception as e:
+                st.error(f"Error reading PDF file: {e}")
+                uploaded_file = None
+        elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" or uploaded_file.name.lower().endswith(('.docx')):
+            try:
+                document = docx.Document(temp_uploaded_filepath)
+                extracted_text = "\n".join([para.text for para in document.paragraphs])
+                context_text = extracted_text
+                st.success(f"Extracted text from DOCX: {uploaded_file.name}")
+            except Exception as e:
+                st.error(f"Error reading DOCX file: {e}")
+                uploaded_file = None
+        elif uploaded_file.type in ["text/plain", "text/markdown"] or uploaded_file.name.lower().endswith(('.txt', '.md')):
+            extracted_text = uploaded_file.getvalue().decode("utf-8")
+            context_text = extracted_text
+            st.success(f"Uploaded text file: {uploaded_file.name}")
+        else:
              st.error("Unsupported file type. Please upload PNG, JPG, JPEG, PDF, TXT, MD, or DOCX.")
              uploaded_file = None # Invalidate file
 
-    if uploaded_file is not None:
-        # Save the uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(uploaded_file.getvalue())
-            context_filepath = tmp_file.name
-        st.success(f"Uploaded file: {uploaded_file.name}")
+    # Validate extracted text content if applicable
+    if context_text:
+        if not context_text.strip():
+            st.error("Extracted text content is empty. Please upload a document with content.")
+            context_text = None
+        elif len(context_text.strip()) < MIN_TEXT_CHAR_COUNT:
+            st.error(f"Extracted text content has too little content ({len(context_text.strip())} characters). Please upload a document with at least {MIN_TEXT_CHAR_COUNT} characters.")
+            context_text = None
 
 
 if st.button("Find Job Leads"):
     if ai_service is None:
         st.error("AI service not initialized. Please select a valid service.")
-    elif app_config["AI_SERVICE_TYPE"] == "gemini" and not os.getenv("GEMINI_API_KEY"):
-        st.error("GEMINI_API_KEY is not set. Please add it to Colab secrets or your environment variables.")
     else:
         with st.spinner(f"Searching for job leads using {app_config['AI_SERVICE_TYPE']}..."):
-            leads = find_job_leads(user_query=search_query, ai_service=ai_service, context_filepath=context_filepath)
+            leads = find_job_leads(
+                user_query=search_query,
+                ai_service=ai_service,
+                context_text=context_text, # Pass extracted text content
+                context_image_filepath=context_image_filepath # Pass temporary image file path
+            )
 
             if leads:
                 st.success(f"Found {len(leads)} Job Leads:")
@@ -134,6 +190,7 @@ if st.button("Find Job Leads"):
             else:
                 st.info("No job leads were returned for your query. Try a different search term or check your API key.")
 
-    # Clean up temporary file if it was created
-    if context_filepath and os.path.exists(context_filepath):
-        os.remove(context_filepath)
+    # Clean up all temporary files after processing
+    for f_path in temp_file_paths:
+        if os.path.exists(f_path):
+            os.remove(f_path)
