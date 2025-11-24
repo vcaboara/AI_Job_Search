@@ -1,8 +1,8 @@
 import os
 from typing import List, Optional
 
-import google.genai as generativeai_sdk # Changed to google.genai
-from google.genai import types # Still needed for types.Part and types.Schema
+import google.generativeai as generativeai_sdk # Changed to google.generativeai
+from google.generativeai import types # FIXED: Changed to google.generativeai for types
 
 from job_search_module.services.base import AbstractAIService
 
