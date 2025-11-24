@@ -40,3 +40,25 @@ While `pip` and `requirements.txt` are standard, for more complex projects, cons
 * **Poetry**: A comprehensive dependency management and packaging tool for Python. It simplifies dependency resolution, virtual environment management, and package publishing. It uses `pyproject.toml` instead of `setup.py` and `requirements.txt`.
 * **Pipenv**: A tool that aims to bring the best of all packaging worlds to the Python world (bundler, cargo, npm, etc.). It creates and manages a virtualenv for your projects, and adds/removes packages from your `Pipfile` as you install/uninstall packages.
 * **Conda**: A package, dependency, and environment manager for any language. It's particularly popular in the data science community for managing environments with complex native dependencies (e.g., scientific computing libraries).
+
+## Recent Enhancements
+
+This project has undergone several significant enhancements to improve its modularity, extensibility, user experience, and robustness. Below is a summary of the key updates:
+
+*   **Python Version Update**: The project now explicitly requires Python version `>=3.10`. This change is reflected in `setup.py` and the `Dockerfile`, ensuring compatibility with modern Python features.
+
+*   **AI Service Interface Refactoring**: The core logic for interacting with AI models has been refactored to support multiple AI backends. This involves:
+    *   An `AbstractAIService` interface (`job_search_module/services/base.py`) defining a common contract for AI interactions.
+    *   A concrete `GeminiService` implementation (`job_search_module/services/gemini.py`) for the Google Gemini API.
+    *   A placeholder `OpenAIService` (`job_search_module/services/openai.py`) demonstrating how other AI services can be easily integrated.
+
+*   **Streamlit UI Enhancements**: The `app.py` Streamlit application has been significantly upgraded:
+    *   **Dynamic AI Service Selection**: Users can now select their preferred AI service (Gemini or OpenAI) via a dropdown in the sidebar.
+    *   **Editable Model Name Inputs**: Model names for both Gemini and OpenAI can be specified through text inputs, which are conditionally enabled based on the selected AI service.
+    *   **API Key Inputs**: Secure password-type text input fields have been added in the sidebar for users to directly enter their Gemini and OpenAI API keys, prioritizing UI input over environment variables for convenience.
+
+*   **Improved Context Document Handling**: The application now offers more robust handling of user-uploaded context documents:
+    *   **File Size Limits**: Uploaded files are checked against a maximum size limit of 5 MB.
+    *   **Supported File Type Validation**: The app validates uploaded files to ensure they are of supported types (PNG, JPG, JPEG, PDF, TXT, MD, DOCX).
+    *   **Basic Content Validation**: Text-based files (`.txt`, `.md`) are checked for non-empty content and a minimum character count to ensure meaningful input.
+    *   **Secure Temporary Storage**: Uploaded files are temporarily saved and automatically cleaned up after processing using `tempfile.NamedTemporaryFile`, ensuring data privacy and preventing accumulation.
