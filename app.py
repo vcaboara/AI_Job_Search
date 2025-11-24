@@ -100,7 +100,7 @@ if uploaded_file is not None:
     else:
         # Check content type if it's an image for more accurate mime type
         if uploaded_file.type in ["image/jpeg", "image/png"]:
-            # Use imghdr to verify image format (optional, adds robustness)
+            # Use imghdr to verify image format (optional, but good practice)
             # For simplicity, we trust uploaded_file.type for now.
             pass
         elif uploaded_file.type not in ["application/pdf", "text/plain", "text/markdown", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
