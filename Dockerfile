@@ -1,5 +1,5 @@
 # Use a Python base image
-FROM python:3.9-slim-buster
+FROM python:3.10-slim-buster
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,11 +8,11 @@ WORKDIR /app
 COPY job_search_module/ job_search_module/
 COPY app.py .
 COPY requirements.txt .
-COPY setup.py .
-COPY README.md .
+COPY setup.py . # Added setup.py
+COPY README.md . # Added README.md
 
-# Install project dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install project dependencies
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Expose the port Streamlit runs on
 EXPOSE 8501
