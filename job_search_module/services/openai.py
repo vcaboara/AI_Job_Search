@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from google.genai import types # Still needed for type hinting the schema and content parts
+from google.generativeai import types # FIXED: Changed to google.generativeai for types
 
 from job_search_module.services.base import AbstractAIService
 

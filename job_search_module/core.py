@@ -3,7 +3,7 @@ import json
 from typing import List, Dict, Any, Optional
 
 from pydantic import BaseModel, Field
-from google.genai import types # Needed for types.Part and types.Schema
+from google.generativeai import types # FIXED: Changed to use google.generativeai
 
 from job_search_module.config import load_config
 from job_search_module.services.base import AbstractAIService
