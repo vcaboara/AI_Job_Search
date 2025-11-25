@@ -6,6 +6,7 @@ from google.genai import types
 
 from job_search_module.services.base import AbstractAIService
 
+
 class GeminiService(AbstractAIService):
     """Concrete implementation of AbstractAIService for the Gemini API."""
 
@@ -22,7 +23,8 @@ class GeminiService(AbstractAIService):
         contents: List[types.Part],
         response_schema: types.Schema,
         temperature: float = 0.2,
-        system_instruction: Optional[str] = None # Added for compatibility with core.py
+        # Added for compatibility with core.py
+        system_instruction: Optional[str] = None
     ) -> str:
         """
         Generates content using the Gemini API.
@@ -47,8 +49,9 @@ class GeminiService(AbstractAIService):
                     temperature=temperature
                 )
             )
+            # TODO: Validate response is not None and has text
             return response.text
         except Exception as e:
             # In a real application, you might want more sophisticated error handling
             print(f"An error occurred during Gemini API call: {e}")
-            return "[]" # Return an empty JSON array on error to conform to expected output type
+            return "[]"  # Return an empty JSON array on error to conform to expected output type

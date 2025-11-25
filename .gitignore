@@ -31,3 +31,5 @@ sample_data/
 
 # Local test dummy file
 sample_resume_context.jpg
+
+.vscode/
