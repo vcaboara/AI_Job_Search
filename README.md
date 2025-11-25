@@ -98,3 +98,24 @@ The CI workflow is defined in `.github/workflows/ci.yml` and includes the follow
 *   **Faster Feedback**: Developers receive immediate feedback on their code changes.
 *   **Increased Confidence**: Ensures that new features or bug fixes don't break existing functionality.
 *   **Collaborative Development**: Promotes a consistent code standard across all contributors.
+
+## Continuous Integration (CI) with GitHub Actions
+
+This project utilizes GitHub Actions for Continuous Integration (CI) to automate testing and linting whenever new code is pushed or a pull request is opened. This helps maintain code quality and prevent regressions.
+
+### Workflow Details
+
+The CI workflow is defined in `.github/workflows/ci.yml` and includes the following steps:
+
+1.  **Checkout Code**: Fetches the latest code from the repository.
+2.  **Set up Python 3.10**: Configures the Python environment to use version 3.10.
+3.  **Install Dependencies**: Installs project dependencies from `requirements.txt` and development dependencies (including `flake8` and `pytest`) specified in `setup.py`.
+4.  **Run Flake8 Linting**: Executes `flake8` to check for Python style guide violations and potential errors.
+5.  **Run Pytest**: Runs all unit tests to ensure the application's core functionality is working as expected.
+
+### Benefits
+
+*   **Automated Quality Checks**: Catches errors and style violations early in the development cycle.
+*   **Faster Feedback**: Developers receive immediate feedback on their code changes.
+*   **Increased Confidence**: Ensures that new features or bug fixes don't break existing functionality.
+*   **Collaborative Development**: Promotes a consistent code standard across all contributors.
